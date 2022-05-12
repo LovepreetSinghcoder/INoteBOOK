@@ -3,11 +3,14 @@ const User = require('../models/User');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+
 var jwt = require('jsonwebtoken');
+const fetchuser = require('../middleware/fetchuser');
+
 
 const JWT_SECRET = 'Lovepreetisagoodb$oy@';
 
-// Create a user using : "/api/auth/createuser". no login required
+// Route 1 : Create a user using : "/api/auth/createuser". no login required
 router.post('/createuser', [
   body('name', 'Enter a Valid name').isLength({ min: 3 }),
   body('email', 'Please write valid email').isEmail(),
@@ -46,12 +49,13 @@ router.post('/createuser', [
     res.json({ authtoken })
   } catch (error) {
     console.error(error.message);
-    res.status(500).sen("Some Error occured!")
+    res.status(500).send("Server 1 Error occured!");
+
   }
 })
 
 
-// Authenticate a user using : "/api/auth/login". no login required
+//Route 2 : Authenticate a user using : "/api/auth/login". no login required
 router.post('/login', [
   body('email', 'Please write valid email').isEmail(),
   body('password', 'Password cannnot be blank!').exists(),
@@ -63,16 +67,38 @@ router.post('/login', [
   }
   const { email, password } = req.body;
   try {
-    let user = User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: "Please try again with right creditial" })
     }
-    const passwordCompare = bcrypt.compare(password, user.password);
-    if
+    const passwordCompare = await bcrypt.compare(password, user.password);
+    if (!passwordCompare) {
+      return res.status(400).json({ error: "Please Login with correct credential!" });
+    }
 
+    const data = {
+      user: {
+        id: user.id
+      }
+    }
+    const authtoken = jwt.sign(data, JWT_SECRET);
+    res.json({ authtoken })
   } catch (error) {
-
+    console.error(error.message);
+    res.status(500).send("Server 2 Error occured!");
   }
 }
-)
+);
+
+//Route 3 : login validation a user using : "/api/auth/getuser". Login required
+router.post('/getuser', fetchuser, async (req, res) => {
+  try {
+    userId = req.user.id;
+    const user = await User.findById(userId).select("-password")
+    res.send(user);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server 3 Error occured!");
+  }
+})
 module.exports = router 
