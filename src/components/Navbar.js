@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Link, useLocation } from "react-router-dom";
 
 
 
 export const Navbar = () => {
 let location = useLocation();
-useEffect(() => {
-    // ga.send(["pageview", location.pathname]);
-    console.log(location.pathname);
-  }, [location]);
+// useEffect(() => {
+//     // ga.send(["pageview", location.pathname]);
+//     console.log(location.pathname);
+//   }, [location]);
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
